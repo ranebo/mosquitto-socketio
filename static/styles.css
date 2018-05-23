@@ -1,0 +1,28 @@
+html, body {
+    padding: 0;
+    margin: 0;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+header {
+    padding: 20px 160px;
+    position: fixed;
+    width: 100%;
+    height: 140px;
+}
+
+main {
+    padding: 0px 180px;
+    position: fixed;
+    top: 140px;
+    width: 100%;
+    height: calc(100% - 140px);
+    overflow: auto;
+}
+
+main > div {
+    overflow: auto;
+}

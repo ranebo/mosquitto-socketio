@@ -1,0 +1,4 @@
+flask
+python-socketio
+paho-mqtt
+gevent
