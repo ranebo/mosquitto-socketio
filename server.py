@@ -14,12 +14,13 @@ from flask import Flask, send_from_directory
 # APP
 # ==========
 
+debug = True # Get From Environment
+
 # Configure Socket / App
-sio = socketio.Server(logger=False, async_mode='gevent')
+sio = socketio.Server(logger=debug, async_mode='gevent')
 app = Flask(__name__, static_url_path='')
 app.config['SECRET_KEY'] = 'secret!'
 app.wsgi_app = socketio.Middleware(sio, app.wsgi_app)
-debug = True # Get From Environment
 thread = None
 
 # Test "Device" State (On/Off)

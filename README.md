@@ -61,3 +61,4 @@ The rest is up to you. Get connected!
  * https://github.com/miguelgrinberg/python-socketio
  * http://mosquitto.org/documentation/python/
  * https://pypi.python.org/pypi/paho-mqtt
+ * https://github.com/eclipse/mosquitto/blob/master/mosquitto.conf
