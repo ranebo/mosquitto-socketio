@@ -28,7 +28,7 @@ test_device_on = False
 mqtt_namespace = '/mqtt'
 
 # MQTT Config
-mqtt_broker_host = "ec2-13-56-152-179.us-west-1.compute.amazonaws.com" # "iot.eclipse.org"
+mqtt_broker_host = "localhost" # "iot.eclipse.org"
 mqtt_topics = [ ["pure/data", 0], ["test/#", 0] ]
 
 # ==========
