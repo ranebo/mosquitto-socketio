@@ -17,11 +17,15 @@ Also install [virtualenv](https://pypi.python.org/pypi/virtualenv) if you want t
 
     sudo apt-get install python-virtualenv
 
+or with pip:
+
+    sudo pip install virtualenv 
+
 
 ## Setup
 The use of virtualenv is optional but recommended.
 
-Clone this repo, setup virtualenv and use pip to install requirements.
+Clone this repo, setup virtualenv, and use pip to install requirements.
 
     git clone https://github.com/ranebo/mosquitto-socketio.git
     cd mosquitto-socketio
