@@ -30,7 +30,7 @@ mqtt_namespace = '/mqtt'
 
 # MQTT Config
 # Use "iot.eclipse.org" for a public broker host
-mqtt_broker_host = "ec2-13-56-152-179.us-west-1.compute.amazonaws.com" # Get From Environment
+mqtt_broker_host = "localhost" # Get From Environment
 mqtt_topics = [ ["pure/#", 0], ["test/#", 0] ]
 
 def log(*msgs):
