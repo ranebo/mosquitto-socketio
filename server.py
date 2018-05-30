@@ -13,8 +13,7 @@ from flask import Flask, send_from_directory
 # ==========
 # APP
 # ==========
-
-debug = True # Get From Environment
+debug = False # Get From Environment
 
 # Configure Socket / App
 sio = socketio.Server(logger=debug, async_mode='gevent')
