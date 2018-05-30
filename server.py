@@ -1,17 +1,13 @@
-#!/usr/bin/env python
-
-# https://github.com/roppert/mosquitto-python-example/blob/master/subscriber.py
-# https://github.com/roppert/mosquitto-python-example/blob/master/publisher.py
+#!/usr/bin/env python3
 
 import os
-import time
 import socketio
 
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 
-from gevent import pywsgi
 from random import randint
+from gevent import pywsgi
 from flask import Flask, send_from_directory
 
 # ==========
@@ -19,7 +15,7 @@ from flask import Flask, send_from_directory
 # ==========
 
 # Configure Socket / App
-sio = socketio.Server(logger=True, async_mode='gevent')
+sio = socketio.Server(logger=False, async_mode='gevent')
 app = Flask(__name__, static_url_path='')
 app.config['SECRET_KEY'] = 'secret!'
 app.wsgi_app = socketio.Middleware(sio, app.wsgi_app)
@@ -32,8 +28,8 @@ test_device_on = False
 mqtt_namespace = '/mqtt'
 
 # MQTT Config
-mqtt_broker_host = "iot.eclipse.org"
-mqtt_topics = [ ["agent/updated", 0], ["athing/#", 0] ]
+mqtt_broker_host = "ec2-13-56-152-179.us-west-1.compute.amazonaws.com" # "iot.eclipse.org"
+mqtt_topics = [ ["pure/data", 0], ["test/#", 0] ]
 
 # ==========
 # MQTT
@@ -41,13 +37,29 @@ mqtt_topics = [ ["agent/updated", 0], ["athing/#", 0] ]
 
 # MQTT Handlers
 def on_message(mosq, obj, msg):
-    print("{} {} {}".format(msg.topic, msg.qos, msg.payload))
-    sio.emit('new message', {'data': str(msg.payload.decode())},
-                namespace=mqtt_namespace)
+    print("incoming mqtt: {} {} {}".format(msg.topic, msg.qos, msg.payload))
+    emit_message = 'test message' if msg.topic.startswith('test') else 'new message'
+    sio.emit('new message', {'data': str(msg.payload.decode())}, namespace=mqtt_namespace)
     mosq.publish('pong', 'ack', 0)
 
 def on_publish(mosq, obj, mid):
     pass
+
+# MQTT Client
+def create_mqtt_client():
+    # Create Mqtt client and connect
+    mqtt_client = mqtt.Client()
+    mqtt_client.on_message = on_message
+    mqtt_client.on_publish = on_publish
+
+    # mqtt_client.tls_set('root.ca', certfile='c1.crt', keyfile='c1.key')
+    mqtt_client.connect(mqtt_broker_host, 1883, 60)
+
+    # Subscribe to our topics
+    for topic in mqtt_topics:
+        mqtt_client.subscribe(*topic)
+
+    return mqtt_client
 
 # ==========
 # Socket IO
@@ -84,10 +96,10 @@ def update_test_state(sid, data):
 def background_test_thread():
     """Periodically publish random 'device' data"""
     global test_device_on
-    msgs = [{'topic': "agent/updated", 'payload': "agent updated"},
-            {'topic': "athing/led", 'payload': "ON"},
-            {'topic': "athing/status", 'payload': "athing offline"},
-            {'topic': "athing/status", 'payload': "athing online"}]
+    msgs = [{'topic': "pure/data", 'payload': "Pure Data"},
+            {'topic': "test/led", 'payload': "ON"},
+            {'topic': "test/led", 'payload': "OFF"},
+            {'topic': "test/status", 'payload': "test active"}]
     while True:
         sio.sleep(1)
         if test_device_on:
@@ -111,19 +123,8 @@ def serve_static(filename):
 
 if __name__ == '__main__':
 
-    # Create Mqtt client and connect
-    mqtt_client = mqtt.Client()
-    mqtt_client.on_message = on_message
-    mqtt_client.on_publish = on_publish
-
-    # mqtt_client.tls_set('root.ca', certfile='c1.crt', keyfile='c1.key')
-    mqtt_client.connect(mqtt_broker_host, 1883, 60)
-
-    # Subscribe to our topics
-    for topic in mqtt_topics:
-        mqtt_client.subscribe(*topic)
-
-    # Start listening
+    # Create MQTT Client and start listening
+    mqtt_client = create_mqtt_client()
     mqtt_client.loop_start()
 
     # Deploy with gevent - gevent allows for cross context emit events
@@ -133,7 +134,6 @@ if __name__ == '__main__':
     except ImportError:
         websocket = False
     if websocket:
-        pywsgi.WSGIServer(('', 8080), app,
-                            handler_class=WebSocketHandler).serve_forever()
+        pywsgi.WSGIServer(('', 8080), app, handler_class=WebSocketHandler).serve_forever()
     else:
         pywsgi.WSGIServer(('', 8080), app).serve_forever()

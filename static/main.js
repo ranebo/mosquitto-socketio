@@ -2,7 +2,7 @@ $(document).ready(function(){
   
   // Global / Init Variables
   const namespace = '/mqtt';
-  const socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+  const socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
 
   // $Element Variables
   const $messages = $( "#messages" )
@@ -53,6 +53,10 @@ $(document).ready(function(){
   // Socket events
   
   socket.on('new message', (message) => {
+    addMessage(message.data);
+  });
+
+  socket.on('test message', (message) => {
     addTestingMessage(message.data);
   });
 
