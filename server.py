@@ -19,6 +19,7 @@ debug = False # Get From Environment
 sio = socketio.Server(logger=debug, async_mode='gevent')
 app = Flask(__name__, static_url_path='')
 app.config['SECRET_KEY'] = 'secret!'
+app.config['DEBUG'] = debug
 app.wsgi_app = socketio.Middleware(sio, app.wsgi_app)
 thread = None
 
