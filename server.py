@@ -30,12 +30,12 @@ mqtt_namespace = '/mqtt'
 
 # MQTT Config
 # Use "iot.eclipse.org" for a public broker host
-mqtt_broker_host = "localhost" # Get From Environment
+mqtt_broker_host = "ec2-13-56-152-179.us-west-1.compute.amazonaws.com" # Get From Environment
 mqtt_topics = [ ["pure/#", 0], ["test/#", 0] ]
 
-def log(msg):
+def log(*msgs):
     if debug:
-        print(">> {}".format(msg))
+        print("<><> ", *msgs)
 
 # ==========
 # MQTT
@@ -78,6 +78,7 @@ def emit_test_device_state():
 
 def start_background_tasks():
     global thread
+    log(thread)
     if thread is None:
         thread = sio.start_background_task(background_test_thread)
 
@@ -105,9 +106,9 @@ def update_test_state(sid, data):
 def background_test_thread():
     """Periodically publish random 'device' data"""
     global test_device_on
-    msgs = [{'topic': "test/led", 'payload': "Hello!"},
-            {'topic': "test/led", 'payload': "Goodbye!"},
-            {'topic': "test/status", 'payload': "Test Active!"}]
+    msgs = [{'topic': "test/led", 'payload': "hello"},
+            {'topic': "test/led", 'payload': "goodbye"},
+            {'topic': "test/status", 'payload': "test active"}]
     while True:
         sio.sleep(1)
         if test_device_on:
@@ -128,6 +129,13 @@ def index():
 def serve_static(filename):
     return send_from_directory('static', filename)
 
+@app.after_request
+def add_header(r):
+    """
+    Do not cache - need index to make sure background task is started
+    """
+    r.headers["Cache-Control"] = "no-cache, no-store"
+    return r
 
 if __name__ == '__main__':
 
