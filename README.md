@@ -11,7 +11,7 @@ On Linux with the **apt-get** package manager:
 
 On Mac with the **homebrew** package manager (mosquitto will also get mosquitto-clients):
 
-    sudo brew install mosquitto
+    brew install mosquitto
 
 Also install [virtualenv](https://pypi.python.org/pypi/virtualenv) if you want to use it:
 
@@ -19,7 +19,7 @@ Also install [virtualenv](https://pypi.python.org/pypi/virtualenv) if you want t
 
 or with pip:
 
-    sudo pip install virtualenv 
+    pip install virtualenv 
 
 
 ## Setup
