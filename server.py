@@ -19,6 +19,7 @@ sio = socketio.Server(logger=False, async_mode='gevent')
 app = Flask(__name__, static_url_path='')
 app.config['SECRET_KEY'] = 'secret!'
 app.wsgi_app = socketio.Middleware(sio, app.wsgi_app)
+debug = True # Get From Environment
 thread = None
 
 # Test "Device" State (On/Off)
@@ -28,8 +29,13 @@ test_device_on = False
 mqtt_namespace = '/mqtt'
 
 # MQTT Config
-mqtt_broker_host = "ec2-13-56-152-179.us-west-1.compute.amazonaws.com" # "iot.eclipse.org"
-mqtt_topics = [ ["pure/data", 0], ["test/#", 0] ]
+# Use "iot.eclipse.org" for a public broker host
+mqtt_broker_host = "localhost" # Get From Environment
+mqtt_topics = [ ["pure/#", 0], ["test/#", 0] ]
+
+def log(msg):
+    if debug:
+        print(">> {}".format(msg))
 
 # ==========
 # MQTT
@@ -37,7 +43,7 @@ mqtt_topics = [ ["pure/data", 0], ["test/#", 0] ]
 
 # MQTT Handlers
 def on_message(mosq, obj, msg):
-    print("incoming mqtt: {} {} {}".format(msg.topic, msg.qos, msg.payload))
+    log("incoming mqtt: {} {} {}".format(msg.topic, msg.qos, msg.payload))
     emit_message = 'test message' if msg.topic.startswith('test') else 'new message'
     sio.emit('new message', {'data': str(msg.payload.decode())}, namespace=mqtt_namespace)
     mosq.publish('pong', 'ack', 0)
@@ -67,6 +73,7 @@ def create_mqtt_client():
 
 # Socket Helpers
 def emit_test_device_state():
+    global test_device_on
     sio.emit('test device status', { 'test_device_on': test_device_on }, namespace=mqtt_namespace)
 
 def start_background_tasks():
@@ -78,11 +85,12 @@ def start_background_tasks():
 @sio.on('client connected', namespace=mqtt_namespace)
 def connect(sid):
     emit_test_device_state()
-    print('client connected...', sid)
+    log('client connected...', sid)
+
 
 @sio.on('client disconnected', namespace=mqtt_namespace)
 def disconnect(sid):
-    print('client disconnected...', sid)
+    log('client disconnected...', sid)
 
 
 @sio.on('test state change', namespace=mqtt_namespace)
@@ -90,16 +98,16 @@ def update_test_state(sid, data):
     global test_device_on
     test_device_on = data.get('test_device_on', False)
     emit_test_device_state()
-    print('test data turned {}...'.format('on' if test_device_on else 'off'))
+    log('test data turned {}...'.format('on' if test_device_on else 'off'))
+
 
 # Test thread
 def background_test_thread():
     """Periodically publish random 'device' data"""
     global test_device_on
-    msgs = [{'topic': "pure/data", 'payload': "Pure Data"},
-            {'topic': "test/led", 'payload': "ON"},
-            {'topic': "test/led", 'payload': "OFF"},
-            {'topic': "test/status", 'payload': "test active"}]
+    msgs = [{'topic': "test/led", 'payload': "Hello!"},
+            {'topic': "test/led", 'payload': "Goodbye!"},
+            {'topic': "test/status", 'payload': "Test Active!"}]
     while True:
         sio.sleep(1)
         if test_device_on:
